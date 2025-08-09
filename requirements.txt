@@ -1,0 +1,14 @@
+accelerate>=0.33
+captum>=0.7
+datasets>=2.20
+fastapi>=0.111
+numpy>=1.26
+optuna>=3.6
+pandas>=2.2
+peft>=0.11
+pydantic>=2.7
+PyYAML>=6.0
+scikit-learn>=1.4
+torch>=2.1
+transformers>=4.42
+uvicorn[standard]>=0.30

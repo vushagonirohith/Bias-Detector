@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Bias Detection & Neutralization</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">Bias Detector</div>
+    <nav class="controls">
+      <label class="switch">
+        <input type="checkbox" id="neutralize" checked>
+        <span>Neutralize</span>
+      </label>
+      <label class="slider">
+        <span>Threshold</span>
+        <input type="range" id="threshold" min="0" max="1" step="0.05" value="0.5">
+        <output id="thresholdOut">0.50</output>
+      </label>
+    </nav>
+  </header>
+
+  <main class="wrap">
+    <section class="left">
+      <div class="card">
+        <h2>Try text</h2>
+        <textarea id="input" placeholder="Type or paste text…">Women are too emotional for leadership.</textarea>
+        <div class="row">
+          <button id="run">Analyze</button>
+          <button id="clear">Clear</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Examples</h3>
+        <div id="examples" class="chips"></div>
+      </div>
+
+      <div class="card">
+        <h3>History</h3>
+        <div id="history" class="history"></div>
+      </div>
+    </section>
+
+    <section class="right">
+      <div class="card">
+        <div id="loading" class="loading hidden">
+          <div class="spinner"></div>
+          <span>Analyzing…</span>
+        </div>
+
+        <div id="result" class="hidden">
+          <div class="row pills">
+            <div class="pill"><strong id="bias">—</strong><span class="small">bias</span></div>
+            <div class="pill">
+              <span class="small">confidence</span>
+              <div class="bar"><span id="conf"></span></div>
+            </div>
+          </div>
+
+          <div class="grid">
+            <div>
+              <h3>Original</h3>
+              <div id="original" class="text"></div>
+              <div class="small">Highlighted spans contributed most to the predicted bias.</div>
+              <div class="row">
+                <button id="copyOriginal" class="secondary">Copy original</button>
+              </div>
+            </div>
+            <div>
+              <h3>Neutralized</h3>
+              <div id="neutral" class="text"></div>
+              <div class="row">
+                <button id="copyNeutral" class="secondary">Copy neutralized</button>
+              </div>
+            </div>
+          </div>
+
+          <h3>Class probabilities</h3>
+          <div id="probs" class="probs"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

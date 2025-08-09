@@ -1,0 +1,38 @@
+{
+  "labels": [
+    "race-color",
+    "gender",
+    "sexual-orientation",
+    "religion",
+    "age",
+    "nationality",
+    "disability",
+    "physical-appearance",
+    "socioeconomic",
+    "no_bias"
+  ],
+  "label2id": {
+    "race-color": 0,
+    "gender": 1,
+    "sexual-orientation": 2,
+    "religion": 3,
+    "age": 4,
+    "nationality": 5,
+    "disability": 6,
+    "physical-appearance": 7,
+    "socioeconomic": 8,
+    "no_bias": 9
+  },
+  "id2label": {
+    "0": "race-color",
+    "1": "gender",
+    "2": "sexual-orientation",
+    "3": "religion",
+    "4": "age",
+    "5": "nationality",
+    "6": "disability",
+    "7": "physical-appearance",
+    "8": "socioeconomic",
+    "9": "no_bias"
+  }
+}

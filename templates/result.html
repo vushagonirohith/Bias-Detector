@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bias Detection Result</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Bias Detection Result</h1>
+
+        <p><strong>Original Text:</strong> {{ original_text }}</p>
+        <p><strong>Bias Type:</strong> {{ bias_type }}</p>
+        <p><strong>Confidence:</strong> {{ confidence }}</p>
+        <p><strong>Neutralized Text:</strong> {{ neutralized_text }}</p>
+
+        <h2>Probabilities</h2>
+        <ul>
+            {% for label, value in probs.items() %}
+                <li>{{ label }}: {{ "%.4f"|format(value) }}</li>
+            {% endfor %}
+        </ul>
+
+        <h2>Highlights</h2>
+        <ul>
+            {% for item in highlights %}
+                <li>{{ item.text }} (Score: {{ "%.2f"|format(item.score) }})</li>
+            {% endfor %}
+        </ul>
+
+        <a href="/">Check Another</a>
+    </div>
+</body>
+</html>

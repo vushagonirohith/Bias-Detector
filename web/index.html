@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Bias Detector</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root { --bg:#0b0f14; --card:#121822; --muted:#9fb0c0; --accent:#5cc8ff; --good:#20c997; --warn:#ffb020; --bad:#ff6b6b; }
+    body{margin:0;background:var(--bg);color:#e8f1f8;font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+    .wrap{max-width:900px;margin:40px auto;padding:0 16px}
+    .card{background:var(--card);border-radius:16px;padding:20px;box-shadow:0 6px 24px rgba(0,0,0,.35)}
+    h1{margin:0 0 12px;font-weight:700;letter-spacing:.2px}
+    .row{display:flex;gap:12px;flex-wrap:wrap;margin:10px 0}
+    textarea{flex:1;min-height:120px;border-radius:12px;border:1px solid #223044;background:#0e141c;color:#e8f1f8;padding:12px;font-size:16px;outline:none}
+    button{border:0;border-radius:12px;padding:12px 18px;background:var(--accent);color:#001018;font-weight:700;cursor:pointer}
+    button:disabled{opacity:.6;cursor:not-allowed}
+    .pill{display:inline-flex;align-items:center;gap:8px;border-radius:999px;padding:8px 12px;background:#0e141c;border:1px solid #223044}
+    .kv{display:grid;grid-template-columns:180px 1fr;gap:10px;margin-top:14px}
+    .mono{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+    .bar{height:8px;border-radius:6px;background:#0e141c;border:1px solid #223044;overflow:hidden}
+    .bar > span{display:block;height:100%;background:linear-gradient(90deg,#66d4ff,#5cc8ff)}
+    .text{line-height:1.8;background:#0e141c;border:1px dashed #223044;padding:12px;border-radius:12px}
+    mark{padding:2px 4px;border-radius:6px;background:rgba(255,107,107,.2)}
+    .small{color:var(--muted);font-size:13px}
+    .grid{display:grid;gap:10px}
+    @media (min-width:900px){ .grid{grid-template-columns:1fr 1fr} }
+    .tbl{width:100%;border-collapse:collapse;font-size:14px}
+    .tbl th,.tbl td{border-bottom:1px solid #223044;padding:6px 8px;text-align:left}
+    .tbl th{color:var(--muted);font-weight:600}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>Bias Detection & Neutralization</h1>
+      <div class="row">
+        <textarea id="input" placeholder="Type or paste text…">Women are too emotional for leadership.</textarea>
+        <button id="run">Analyze</button>
+      </div>
+
+      <div id="result" style="display:none">
+        <div class="row">
+          <div class="pill"><strong id="bias">—</strong><span class="small">bias</span></div>
+          <div class="pill"><span class="small">confidence</span>
+            <div class="bar" style="width:160px"><span id="conf" style="width:0%"></span></div>
+          </div>
+        </div>
+
+        <div class="grid" style="margin-top:12px">
+          <div>
+            <h3 style="margin:10px 0">Original</h3>
+            <div id="original" class="text"></div>
+            <div class="small" style="margin-top:6px">Top highlighted words indicate strongest contribution to the predicted bias.</div>
+          </div>
+          <div>
+            <h3 style="margin:10px 0">Neutralized</h3>
+            <div id="neutral" class="text"></div>
+          </div>
+        </div>
+
+        <h3 style="margin:16px 0 8px">Class probabilities</h3>
+        <table class="tbl" id="probs"></table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const el = id => document.getElementById(id);
+    const runBtn = el('run');
+    const input = el('input');
+
+    function renderTextWithHighlights(text, spans){
+      // spans: [{text,start,end,score}]
+      // sort by start, merge overlaps (keep highest score)
+      spans = (spans||[]).slice().sort((a,b)=>a.start-b.start);
+      const merged = [];
+      for(const s of spans){
+        if (!merged.length || s.start >= merged[merged.length-1].end){
+          merged.push({...s});
+        } else {
+          // overlap: extend end and keep max score
+          const last = merged[merged.length-1];
+          last.end = Math.max(last.end, s.end);
+          last.score = Math.max(last.score, s.score);
+        }
+      }
+      let out = '', i = 0;
+      for(const s of merged){
+        if (i < s.start) out += escapeHtml(text.slice(i, s.start));
+        const seg = text.slice(s.start, s.end);
+        const alpha = Math.min(1, 0.25 + (s.score / (merged[0]?.score || 1)) * 0.75);
+        out += `<mark style="background:rgba(255,107,107,${alpha.toFixed(2)})" title="${s.score.toFixed(3)}">${escapeHtml(seg)}</mark>`;
+        i = s.end;
+      }
+      if (i < text.length) out += escapeHtml(text.slice(i));
+      return out;
+    }
+
+    function escapeHtml(s){ return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+    function renderProbs(probs){
+      const rows = Object.entries(probs).sort((a,b)=>b[1]-a[1]).map(([k,v])=>{
+        const pct = (v*100).toFixed(2);
+        return `<tr><td>${k}</td><td class="mono">${pct}%</td></tr>`;
+      }).join('');
+      return `<tr><th>Class</th><th>Probability</th></tr>${rows}`;
+    }
+
+    async function analyze(){
+      runBtn.disabled = true; runBtn.textContent = 'Analyzing…';
+      try{
+        const res = await fetch('/predict', {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ text: input.value })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data?.error || 'Request failed');
+
+        el('result').style.display = 'block';
+        el('bias').textContent = data.bias_type;
+        el('conf').style.width = `${(data.confidence*100).toFixed(0)}%`;
+        el('original').innerHTML = renderTextWithHighlights(data.original_text || input.value, data.highlights || []);
+        el('neutral').textContent = data.neutralized_text || '';
+        el('probs').innerHTML = renderProbs(data.probs || {});
+      }catch(e){
+        alert(e.message);
+      }finally{
+        runBtn.disabled = false; runBtn.textContent = 'Analyze';
+      }
+    }
+
+    runBtn.addEventListener('click', analyze);
+  </script>
+</body>
+</html>

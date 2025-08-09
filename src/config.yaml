@@ -1,0 +1,28 @@
+model_name: microsoft/deberta-v3-base
+max_length: 256
+random_seed: 42
+threshold: 0.35
+labels:
+  - race-color
+  - gender
+  - sexual-orientation
+  - religion
+  - age
+  - nationality
+  - disability
+  - physical-appearance
+  - socioeconomic
+  - no_bias
+train:
+  lr: 2.0e-5
+  epochs: 3
+  batch_size: 16
+  weight_decay: 0.01
+  eval_steps: 200
+  gradient_accumulation_steps: 1
+  lora:
+    enabled: true
+    r: 8
+    alpha: 16
+    dropout: 0.1
+    target_modules: ["query_proj", "key_proj", "value_proj", "dense"]
