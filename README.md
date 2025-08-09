@@ -39,11 +39,35 @@ The app detects the bias type, highlights biased words/phrases, and provides a *
 
 
 
-# Bias Detector v2
 
-Detect bias type (9 classes + `no_bias`) and generate neutralized text.
+---
 
-## Setup
+## 📸 Screenshots  
 
+**Homepage**  
+![Homepage](static/images/homepage.png)  
+
+**Bias Detection Result**  
+![Result](static/images/result.png)  
+
+-----
+
+## ⚡ How to Run
 ```bash
+# 1️⃣ Clone the repository
+git clone https://github.com/YOUR_USERNAME/bias-detection.git
+cd bias-detection
+
+# 2️⃣ Create a virtual environment
+python -m venv venv
+source venv/bin/activate   # On Windows use venv\Scripts\activate
+
+# 3️⃣ Install dependencies
 pip install -r requirements.txt
+
+# 4️⃣ Run the Flask app
+python app.py
+
+# 5️⃣ Open in browser
+http://127.0.0.1:5000
+
