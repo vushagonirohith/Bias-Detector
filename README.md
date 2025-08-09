@@ -55,7 +55,7 @@ The app detects the bias type, highlights biased words/phrases, and provides a *
 ## ⚡ How to Run
 ```bash
 # 1️⃣ Clone the repository
-git clone https://github.com/YOUR_USERNAME/bias-detection.git
+git clone https://github.com/vushagonirohith/bias-detection.git
 cd bias-detection
 
 # 2️⃣ Create a virtual environment
