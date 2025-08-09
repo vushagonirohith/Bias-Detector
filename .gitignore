@@ -1,24 +1,17 @@
 @"
-# Python
+venv/
+.venv/
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
-.venv/
-venv/
 *.egg-info/
 
-# Data & models (keep the repo small)
 data/**
 !data/README.md
 models/**
 !models/README.md
 
-# Checkpoints / tmp
-**/checkpoint*/
-*.log
-
-# Editors / OS
 .vscode/
 .idea/
 .DS_Store
